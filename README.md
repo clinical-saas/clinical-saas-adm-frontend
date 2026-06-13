@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# clinical-saas-adm-frontend
 
-## Getting Started
+Admin panel for multi-tenant platform management.
+Next.js 16 + TypeScript + TailwindCSS + Shadcn/ui.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Tool | Purpose |
+| :--- | :--- |
+| Next.js 16 (App Router) | Framework React with Server Components |
+| TypeScript | Static typing |
+| TailwindCSS v4 | Utility-first CSS |
+| Shadcn/ui | Accessible and customizable components |
+| TanStack Query v5 | Client-side fetching and cache |
+| Zustand v5 | Global state (auth, UI) |
+| React Hook Form + Zod | Forms and validation |
+
+## Prerequisites
+
+- Node.js >= 20.x
+- npm >= 10.x
+- Docker + Docker Compose (optional)
+- `clinical-saas-services/` running (BFF + microservices)
+
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and adjust:
+
+```env
+NEXT_PUBLIC_BFF_URL=http://localhost:4000
+BFF_INTERNAL_URL=http://bff:4000
+NEXT_PUBLIC_APP_URL=http://localhost:3011
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Start dev server
+npm run dev
+# → http://localhost:3011
+```
 
-## Learn More
+## Docker
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Build and start
+docker compose up --build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Or using the shared ecosystem network
+docker compose --profile adm-frontend up
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Commands
 
-## Deploy on Vercel
+```bash
+npm run dev       # Development with hot-reload
+npm run build     # Production build
+npm run lint      # ESLint
+npm run typecheck # tsc --noEmit
+npm run test      # Tests (upcoming)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Conventions
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `_docs/18-ADM_FRONTEND_PLAN.md` for the full plan.

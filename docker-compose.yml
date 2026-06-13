@@ -1,0 +1,19 @@
+services:
+  adm-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas-adm-frontend
+    ports:
+      - "${ADM_PORT:-3011}:3011"
+    environment:
+      PORT: ${ADM_PORT:-3011}
+      NEXT_PUBLIC_BFF_URL: ${NEXT_PUBLIC_BFF_URL:-http://bff:4000}
+      BFF_INTERNAL_URL: ${BFF_INTERNAL_URL:-http://bff:4000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:${ADM_PORT:-3011}}
+    networks:
+      - saas-network
+
+networks:
+  saas-network:
+    external: true
