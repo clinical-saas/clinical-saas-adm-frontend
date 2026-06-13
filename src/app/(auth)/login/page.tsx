@@ -20,14 +20,14 @@ import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores/auth';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email'),
+  usernameOrEmail: z.string().min(1, 'Username or email is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 type LoginResponse = {
-  user: { id: string; email: string; name: string };
+  user: { id: string; username: string; roleId: string };
   tenantId: string;
 };
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { usernameOrEmail: '', password: '' },
   });
 
   async function onSubmit(data: LoginFormData) {
@@ -49,7 +49,10 @@ export default function LoginPage() {
     try {
       const res = await apiClient<LoginResponse>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          usernameOrEmail: data.usernameOrEmail,
+          password: data.password,
+        }),
       });
 
       setAuth(res.user, res.tenantId);
@@ -72,14 +75,13 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
               <FormField
                 control={form.control}
-                name='email'
+                name='usernameOrEmail'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Username or email</FormLabel>
                     <FormControl>
                       <Input
-                        type='email'
-                        placeholder='admin@example.com'
+                        placeholder='admin.tenant or admin@example.com'
                         {...field}
                       />
                     </FormControl>

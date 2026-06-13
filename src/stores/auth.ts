@@ -2,8 +2,8 @@ import { create } from 'zustand';
 
 type AuthUser = {
   id: string;
-  email: string;
-  name: string;
+  username: string;
+  roleId: string;
 };
 
 type AuthState = {
