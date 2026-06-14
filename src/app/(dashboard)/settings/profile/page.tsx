@@ -42,12 +42,12 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="font-medium">{user.name}</p>
+            <p className="text-sm text-muted-foreground">Username</p>
+            <p className="font-medium">{user.username}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium">{user.email}</p>
+            <p className="text-sm text-muted-foreground">Role ID</p>
+            <p className="font-medium">{user.roleId}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">User ID</p>
