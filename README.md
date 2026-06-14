@@ -27,7 +27,7 @@ Next.js 16 + TypeScript + TailwindCSS + Shadcn/ui.
 Copy `.env.example` to `.env.local` and adjust:
 
 ```env
-NEXT_PUBLIC_BFF_URL=http://localhost:4000
+NEXT_PUBLIC_BFF_URL=http://localhost:4000/api
 BFF_INTERNAL_URL=http://bff:4000
 NEXT_PUBLIC_APP_URL=http://localhost:3011
 ```
