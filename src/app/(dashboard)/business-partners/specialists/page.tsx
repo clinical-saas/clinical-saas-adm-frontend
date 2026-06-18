@@ -13,12 +13,15 @@ import { Button } from "@/components/ui/button";
 
 const columns: ColumnDef<Specialist>[] = [
   {
-    accessorKey: "name",
+    id: "name",
     header: "Name",
+    accessorFn: (row) =>
+      [row.first_name, row.last_name].filter(Boolean).join(" "),
   },
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => row.original.email ?? "—",
   },
   {
     accessorKey: "phone",
@@ -26,15 +29,22 @@ const columns: ColumnDef<Specialist>[] = [
     cell: ({ row }) => row.original.phone ?? "—",
   },
   {
-    accessorKey: "specialty",
-    header: "Specialty",
-    cell: ({ row }) => row.original.specialty ?? "—",
+    id: "roles",
+    header: "Roles",
+    cell: ({ row }) => {
+      const roles = [
+        row.original.is_supplier && "Proveedor",
+        row.original.is_agent && "Agente",
+        row.original.is_customer && "Cliente",
+      ].filter(Boolean);
+      return roles.length ? roles.join(", ") : "—";
+    },
   },
   {
-    accessorKey: "isActive",
+    accessorKey: "active",
     header: "Status",
     cell: ({ row }) =>
-      row.original.isActive ? (
+      row.original.active ? (
         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
           Active
         </span>

@@ -28,10 +28,27 @@ export default function SpecialistDetailPage() {
 
   if (!data) return null;
 
+  const fullName = [data.first_name, data.last_name]
+    .filter(Boolean)
+    .join(" ");
+
+  function calculateAge(birthDate: string | null): number | null {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    if (isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  const age = calculateAge(data.birth_date);
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Specialist Details"
+        title={fullName || "Specialist Details"}
         action={
           <Link href="/business-partners/specialists">
             <Button variant="outline">Back</Button>
@@ -42,26 +59,54 @@ export default function SpecialistDetailPage() {
         <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="font-medium">{data.name}</p>
+              <p className="text-sm text-muted-foreground">Nombres</p>
+              <p className="font-medium">{data.first_name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Apellidos</p>
+              <p className="font-medium">{data.last_name || "—"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{data.email}</p>
+              <p className="font-medium">{data.email || "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
+              <p className="text-sm text-muted-foreground">Telefono</p>
               <p className="font-medium">{data.phone || "—"}</p>
             </div>
+            {data.birth_date && (
+              <div>
+                <p className="text-sm text-muted-foreground">Fecha Nac.</p>
+                <p className="font-medium">{data.birth_date}</p>
+              </div>
+            )}
+            {age !== null && (
+              <div>
+                <p className="text-sm text-muted-foreground">Edad</p>
+                <p className="font-medium">{age} años</p>
+              </div>
+            )}
             <div>
-              <p className="text-sm text-muted-foreground">Specialty</p>
-              <p className="font-medium">{data.specialty || "—"}</p>
+              <p className="text-sm text-muted-foreground">Direccion</p>
+              <p className="font-medium">{data.short_address || data.address || "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-muted-foreground">Roles</p>
               <p className="font-medium">
-                {data.isActive ? "Active" : "Inactive"}
+                {[data.is_supplier && "Proveedor", data.is_agent && "Agente", data.is_customer && "Cliente"]
+                  .filter(Boolean)
+                  .join(", ") || "—"}
               </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Estado</p>
+              <p className="font-medium">
+                {data.active ? "Activo" : "Inactivo"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Readonly</p>
+              <p className="font-medium">{data.readonly ? "Si" : "No"}</p>
             </div>
           </div>
         </CardContent>

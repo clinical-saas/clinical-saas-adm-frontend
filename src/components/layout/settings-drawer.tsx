@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/stores/auth";
+import { useLogout } from "@/hooks/use-logout";
 
 const settingsSections = [
   {
@@ -45,17 +45,11 @@ interface SettingsDrawerProps {
 export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const { logout } = useLogout();
 
   const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch {
-      // Server logout best-effort — clear local state regardless
-    }
-    clearAuth();
+    await logout();
     onOpenChange(false);
-    router.push('/login');
   };
 
   return (

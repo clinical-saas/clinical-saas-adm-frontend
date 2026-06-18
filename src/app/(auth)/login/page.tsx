@@ -26,14 +26,22 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-type LoginResponse = {
+type LoginSuccess = {
   user: { id: string; username: string; roleId: string };
   tenantId: string;
 };
 
+type LoginMultiTenant = {
+  multiTenant: true;
+  tenants: { id: string; name: string }[];
+};
+
+type LoginResponse = LoginSuccess | LoginMultiTenant;
+
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setPendingTenants = useAuthStore((s) => s.setPendingTenants);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +63,14 @@ export default function LoginPage() {
         }),
       });
 
-      setAuth(res.user, res.tenantId);
+      if ('multiTenant' in res && res.multiTenant) {
+        setPendingTenants(res.tenants);
+        router.push('/select-tenant');
+        return;
+      }
+
+      const success = res as LoginSuccess;
+      setAuth(success.user, success.tenantId);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

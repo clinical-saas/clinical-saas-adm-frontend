@@ -77,12 +77,24 @@ export interface Customer {
 
 export interface Specialist {
   id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  specialty?: string;
-  isActive: boolean;
-  createdAt: string;
+  tenant_id: string;
+  identification_type_id: number;
+  identification_number: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  birth_date: string | null;
+  short_address: string | null;
+  address: string | null;
+  is_customer: boolean;
+  is_supplier: boolean;
+  is_agent: boolean;
+  active: boolean;
+  readonly: boolean;
+  extra_data: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string | null;
 }
 
 export interface ServiceCategory {

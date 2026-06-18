@@ -8,7 +8,6 @@ import { catalogSidebar } from "@/features/catalog/sidebar-config";
 import { serviceOrdersSidebar } from "@/features/service-orders/sidebar-config";
 import { documentEngineSidebar } from "@/features/document-engine/sidebar-config";
 import { organizationSidebar } from "@/features/organization/sidebar-config";
-import { reportsSidebar } from "@/features/reports/sidebar-config";
 import type { LucideIcon } from "lucide-react";
 
 const sidebarConfigs: Record<
@@ -20,7 +19,6 @@ const sidebarConfigs: Record<
   "/service-orders": serviceOrdersSidebar,
   "/document-engine": documentEngineSidebar,
   "/organization": organizationSidebar,
-  "/reports": reportsSidebar,
 };
 
 function getActiveConfig(pathname: string) {

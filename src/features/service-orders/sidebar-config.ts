@@ -11,11 +11,6 @@ export const serviceOrdersSidebar = {
           href: "/service-orders",
           icon: ClipboardList,
         },
-        {
-          label: "Create",
-          href: "/service-orders/new",
-          icon: Plus,
-        },
       ],
     },
   ],

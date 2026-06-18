@@ -7,11 +7,6 @@ export const businessPartnersSidebar = {
       label: "Customers",
       items: [
         { label: "Search", href: "/business-partners/customers", icon: Users },
-        {
-          label: "Create",
-          href: "/business-partners/customers/new",
-          icon: UserPlus,
-        },
       ],
     },
     {
@@ -21,11 +16,6 @@ export const businessPartnersSidebar = {
           label: "Search",
           href: "/business-partners/specialists",
           icon: Users,
-        },
-        {
-          label: "Create",
-          href: "/business-partners/specialists/new",
-          icon: UserPlus,
         },
       ],
     },

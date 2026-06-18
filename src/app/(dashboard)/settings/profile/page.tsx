@@ -1,24 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
+import { useLogout } from "@/hooks/use-logout";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
-  const router = useRouter();
-  const { user, clearAuth } = useAuthStore();
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch {
-      // Server logout best-effort — clear local state regardless
-    }
-    clearAuth();
-    router.push('/login');
-  };
+  const { user } = useAuthStore();
+  const { logout } = useLogout();
 
   if (!user) {
     return (
@@ -54,7 +44,7 @@ export default function ProfilePage() {
             <p className="font-medium">{user.id}</p>
           </div>
           <div className="pt-4">
-            <Button variant="destructive" onClick={handleLogout}>
+            <Button variant="destructive" onClick={logout}>
               Logout
             </Button>
           </div>

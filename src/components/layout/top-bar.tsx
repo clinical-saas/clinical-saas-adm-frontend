@@ -7,13 +7,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { label: "Dashboard", href: "/dashboard" },
   { label: "Business Partners", href: "/business-partners/customers" },
-  { label: "Catalog", href: "/catalog/services" },
+  { label: "Catalog", href: "/catalog/service-catalogs" },
   { label: "Service Orders", href: "/service-orders" },
   { label: "Document Engine", href: "/document-engine/documents" },
   { label: "Organization", href: "/organization/tenants" },
-  { label: "Reports", href: "/reports/customers" },
 ];
 
 interface TopBarProps {

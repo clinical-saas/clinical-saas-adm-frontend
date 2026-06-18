@@ -69,7 +69,7 @@ export default function ServiceCatalogsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Service Catalogs"
+        title="Service Categories"
         action={
           <Link href="/catalog/service-catalogs/new">
             <Button>Create Service Catalog</Button>
@@ -80,7 +80,7 @@ export default function ServiceCatalogsPage() {
         <DataTable columns={columns} data={data} />
       ) : (
         <EmptyState
-          title="No service catalogs"
+          title="No service categories"
           description="Get started by creating your first service catalog."
           action={
             <Link href="/catalog/service-catalogs/new">
