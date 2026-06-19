@@ -69,6 +69,7 @@ export default function EditSpecialistPage() {
           )}
           <SpecialistForm
             defaultValues={{
+              providerId: data.id,
               tenantId: data.tenant_id,
               active: data.active,
               firstName: data.first_name ?? "",
@@ -82,6 +83,8 @@ export default function EditSpecialistPage() {
               isAgent: data.is_agent,
               isCustomer: data.is_customer,
               readonly: data.readonly,
+              identificationTypeId: data.identification_type_id,
+              identificationNumber: data.identification_number,
             }}
             onSubmit={onSubmit}
             mode="edit"

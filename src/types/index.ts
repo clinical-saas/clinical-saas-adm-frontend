@@ -39,6 +39,7 @@ export interface IdentificationType {
   code: string;
   name: string;
   description?: string;
+  item_order?: number;
 }
 
 export interface Platform {

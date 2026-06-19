@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiClient } from '@/lib/api/client';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, type TenantInfo } from '@/stores/auth';
 
 const loginSchema = z.object({
   usernameOrEmail: z.string().min(1, 'Username or email is required'),
@@ -27,7 +27,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 type LoginSuccess = {
-  user: { id: string; username: string; roleId: string };
+  user: { id: string; username: string; roleId: string; tenants?: { id: string; name: string }[] };
   tenantId: string;
 };
 
@@ -70,7 +70,12 @@ export default function LoginPage() {
       }
 
       const success = res as LoginSuccess;
-      setAuth(success.user, success.tenantId);
+      const userTenants = success.user.tenants?.map((t): TenantInfo => ({
+        id: t.id,
+        code: '',
+        businessName: t.name,
+      }));
+      setAuth(success.user, success.tenantId, userTenants);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

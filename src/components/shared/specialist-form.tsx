@@ -4,7 +4,11 @@ import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth";
+import { apiClient } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/queries";
+import type { IdentificationType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,6 +29,7 @@ import {
 } from "@/components/ui/select";
 
 const formSchema = z.object({
+  providerId: z.string().uuid().optional(),
   tenantId: z.string().uuid(),
   active: z.boolean(),
   firstName: z.string().min(1, "Nombres requerido"),
@@ -38,6 +43,18 @@ const formSchema = z.object({
   isAgent: z.boolean(),
   isCustomer: z.boolean(),
   readonly: z.boolean(),
+  identificationTypeId: z.number({
+    error: "Tipo de identificacion requerido",
+  }),
+  identificationNumber: z
+    .string()
+    .min(1, "Numero de identificacion requerido")
+    .min(6, "Minimo 6 caracteres")
+    .transform((v) => v.toUpperCase().replace(/\s/g, ""))
+    .refine(
+      (v) => /^[0-9A-Z](?:-)?[0-9A-Z]+(?:-)?$/.test(v),
+      "Formato invalido: letras (A-Z), numeros (0-9), guion en posicion 2 o penultima",
+    ),
 });
 
 export type SpecialistFormValues = z.infer<typeof formSchema>;
@@ -57,11 +74,15 @@ export function SpecialistForm({
 }: SpecialistFormProps) {
   const tenants = useAuthStore((s) => s.tenants);
 
-  console.log("tenants: ", tenants);
+  const { data: identificationTypes } = useQuery({
+    queryKey: queryKeys.identificationTypes.list(),
+    queryFn: () => apiClient<IdentificationType[]>("/identification-type"),
+  });
 
   const form = useForm<SpecialistFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      providerId: undefined,
       tenantId: "",
       active: true,
       firstName: "",
@@ -75,6 +96,8 @@ export function SpecialistForm({
       isAgent: false,
       isCustomer: false,
       readonly: false,
+      identificationTypeId: 0,
+      identificationNumber: "",
       ...defaultValues,
     },
   });
@@ -102,51 +125,268 @@ export function SpecialistForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-          {mode === "edit" && (
-            <FormField
-              control={form.control}
-              name="tenantId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID</FormLabel>
-                  <FormControl>
-                    <Input disabled value={defaultValues?.tenantId ?? ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+        <div className="hidden">
+          <FormField
+            control={form.control}
+            name="providerId"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} disabled />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="tenantId"
+            render={({ field }) => {
+              const selectedTenant = tenants?.find((t) => t.id === field.value);
+              return (
+                <FormItem>
+                  <FormLabel>Tenant</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={(v: string | null) => v && field.onChange(v)}
+                    >
+                      <SelectTrigger className="min-w-[200px]">
+                        <SelectValue placeholder="Selecciona un tenant" className="truncate">
+                          {selectedTenant ? selectedTenant.businessName : "Selecciona un tenant"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="max-w-[300px]">
+                        {tenants?.map((t) => (
+                          <SelectItem key={t.id} value={t.id} className="truncate">
+                            <span className="truncate block w-full max-w-[280px]">
+                              {t.businessName}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+
+          <FormItem>
+            <FormLabel>Roles</FormLabel>
+            <div className="flex flex-wrap gap-2">
+              {roleChips.map((chip) => (
+                <span
+                  key={chip.key}
+                  data-active={chip.active}
+                  className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
+                >
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+          </FormItem>
+        </div>
+
+        <hr className="border-border" />
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="identificationTypeId"
+            render={({ field }) => {
+              const selectedIdType = identificationTypes?.find(
+                (t) => String(t.id) === String(field.value)
+              );
+              return (
+                <FormItem>
+                  <FormLabel>Tipo de Identificación</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(v) => field.onChange(Number(v))}
+                    >
+                      <SelectTrigger className="min-w-[200px]">
+                        <SelectValue placeholder="Selecciona un tipo" className="truncate">
+                          {selectedIdType ? selectedIdType.name : "Selecciona un tipo"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {identificationTypes
+                          ?.slice()
+                          .sort((a, b) => (a.item_order ?? 0) - (b.item_order ?? 0))
+                          .map((it) => (
+                            <SelectItem key={it.id} value={String(it.id)} className="truncate">
+                              {it.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        
+          <FormField
+            control={form.control}
+            name="identificationNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tenant</FormLabel>
+                <FormLabel>Numero de Identificacion</FormLabel>
                 <FormControl>
-                  <Select
+                  <Input
+                    placeholder="V-12345678"
                     value={field.value}
-                    onValueChange={(v: string | null) => v && field.onChange(v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants?.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) =>
+                      field.onChange(e.target.value.toUpperCase().replace(/\s/g, ""))
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombres</FormLabel>
+                <FormControl>
+                  <Input placeholder="Juan" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Apellidos</FormLabel>
+                <FormControl>
+                  <Input placeholder="Perez" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+
+          <FormField
+            control={form.control}
+            name="birthDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fecha de Nacimiento</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormItem>
+            <FormLabel>Edad</FormLabel>
+            <FormControl>
+              <div className="flex h-9 items-center">
+                {age !== null ? (
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                    {age} años
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </div>
+            </FormControl>
+          </FormItem>
+
+          </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="juan@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefono</FormLabel>
+                <FormControl>
+                  <Input placeholder="+1234567890" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="shortAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Direccion Corta</FormLabel>
+                <FormControl>
+                  <Input placeholder="Calle y numero" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Direccion Larga</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Direccion completa, referencia, etc." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+
+        <hr className="border-border" />
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="active"
@@ -182,202 +422,41 @@ export function SpecialistForm({
 
           <FormField
             control={form.control}
-            name="firstName"
+            name="readonly"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombres</FormLabel>
+                <FormLabel>Readonly</FormLabel>
                 <FormControl>
-                  <Input placeholder="Juan" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Apellidos</FormLabel>
-                <FormControl>
-                  <Input placeholder="Perez" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="birthDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fecha de Nacimiento</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormItem>
-            <FormLabel>Edad</FormLabel>
-            <FormControl>
-              <div className="flex h-9 items-center">
-                {age !== null ? (
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                    {age} años
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">—</span>
-                )}
-              </div>
-            </FormControl>
-          </FormItem>
-
-          <FormField
-            control={form.control}
-            name="shortAddress"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Direccion Corta</FormLabel>
-                <FormControl>
-                  <Input placeholder="Calle y numero" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem className="md:col-span-2">
-                <FormLabel>Direccion Larga</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Direccion completa, referencia, etc."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="juan@example.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefono</FormLabel>
-                <FormControl>
-                  <Input placeholder="+1234567890" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <FormLabel>Roles</FormLabel>
-          <div className="flex flex-wrap gap-2">
-            {roleChips.map((chip) => (
-              <span
-                key={chip.key}
-                data-active={chip.active}
-                className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
-              >
-                {chip.label}
-              </span>
-            ))}
-          </div>
-          {/*<!-- Hidden checkboxes to keep state in sync 
-          <div className="flex flex-wrap gap-4 pt-1">
-            {roleChips.map((chip) => (
-              <FormField
-                key={chip.key}
-                control={form.control}
-                name={chip.key as "isSupplier" | "isAgent" | "isCustomer"}
-                render={({ field }) => (
-                  <label className="flex items-center gap-1.5 cursor-pointer text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
-                      className="h-4 w-4 rounded border-input accent-primary"
+                      className="sr-only"
                     />
-                    {chip.label}
-                  </label>
-                )}
-              />
-            ))}
-          </div>
-          */}
-        </div>
-
-        <FormField
-          control={form.control}
-          name="readonly"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Readonly</FormLabel>
-              <FormControl>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div
-                    data-checked={field.value}
-                    className="relative h-6 w-11 rounded-full bg-input transition-colors data-[checked=true]:bg-primary"
-                  >
                     <div
                       data-checked={field.value}
-                      className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform data-[checked=true]:translate-x-5"
-                    />
-                  </div>
-                  <span className="text-sm">
-                    {field.value ? "Si" : "No"}
-                  </span>
-                </label>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                      className="relative h-6 w-11 rounded-full bg-input transition-colors data-[checked=true]:bg-primary"
+                    >
+                      <div
+                        data-checked={field.value}
+                        className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform data-[checked=true]:translate-x-5"
+                      />
+                    </div>
+                    <span className="text-sm">
+                      {field.value ? "Si" : "No"}
+                    </span>
+                  </label>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex gap-2 pt-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? "Guardando..."
-              : mode === "create"
-                ? "Crear"
-                : "Guardar"}
+            {isSubmitting ? "Guardando..." : mode === "create" ? "Crear" : "Guardar"}
           </Button>
         </div>
       </form>

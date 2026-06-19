@@ -8,6 +8,12 @@ type AuthUser = {
 
 export type TenantInfo = {
   id: string;
+  code: string;
+  businessName: string;
+};
+
+export type PendingTenantInfo = {
+  id: string;
   name: string;
 };
 
@@ -15,31 +21,54 @@ type AuthState = {
   user: AuthUser | null;
   tenantId: string | null;
   tenants: TenantInfo[] | null;
+  allTenants: TenantInfo[] | null;
+  pendingTenants: PendingTenantInfo[] | null;
   isPendingTenant: boolean;
-  setAuth: (user: AuthUser, tenantId: string) => void;
-  setPendingTenants: (tenants: TenantInfo[]) => void;
+  setAuth: (user: AuthUser, tenantId: string, tenants?: TenantInfo[]) => void;
+  setPendingTenants: (tenants: PendingTenantInfo[]) => void;
+  setAllTenants: (tenants: TenantInfo[]) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
 };
 
-function loadAuth(): Pick<AuthState, 'user' | 'tenantId'> {
+type StoredAuth = {
+  user: AuthUser;
+  tenantId: string;
+  tenants: TenantInfo[];
+  allTenants: TenantInfo[];
+};
+
+function loadAuth(): Pick<AuthState, 'user' | 'tenantId' | 'tenants' | 'allTenants'> {
   if (typeof window === 'undefined') {
-    return { user: null, tenantId: null };
+    return { user: null, tenantId: null, tenants: null, allTenants: null };
   }
   try {
     const raw = localStorage.getItem('auth');
-    if (!raw) return { user: null, tenantId: null };
-    const parsed = JSON.parse(raw) as { user: AuthUser; tenantId: string };
-    return { user: parsed.user, tenantId: parsed.tenantId };
+    if (!raw) return { user: null, tenantId: null, tenants: null, allTenants: null };
+    const parsed = JSON.parse(raw) as StoredAuth;
+    return {
+      user: parsed.user,
+      tenantId: parsed.tenantId,
+      tenants: parsed.tenants ?? null,
+      allTenants: parsed.allTenants ?? null,
+    };
   } catch {
-    return { user: null, tenantId: null };
+    return { user: null, tenantId: null, tenants: null, allTenants: null };
   }
 }
 
-function saveAuth(user: AuthUser | null, tenantId: string | null) {
+function saveAuth(
+  user: AuthUser | null,
+  tenantId: string | null,
+  tenants?: TenantInfo[] | null,
+  allTenants?: TenantInfo[] | null,
+) {
   if (typeof window === 'undefined') return;
   if (user && tenantId) {
-    localStorage.setItem('auth', JSON.stringify({ user, tenantId }));
+    localStorage.setItem(
+      'auth',
+      JSON.stringify({ user, tenantId, tenants: tenants ?? null, allTenants: allTenants ?? null }),
+    );
   } else {
     localStorage.removeItem('auth');
   }
@@ -47,18 +76,24 @@ function saveAuth(user: AuthUser | null, tenantId: string | null) {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   ...loadAuth(),
-  tenants: null,
+  pendingTenants: null,
   isPendingTenant: false,
-  setAuth: (user, tenantId) => {
-    saveAuth(user, tenantId);
-    set({ user, tenantId, tenants: null, isPendingTenant: false });
+  setAuth: (user, tenantId, tenants) => {
+    const currentAllTenants = get().allTenants;
+    saveAuth(user, tenantId, tenants ?? null, currentAllTenants ?? null);
+    set({ user, tenantId, tenants: tenants ?? null, pendingTenants: null, isPendingTenant: false });
   },
-  setPendingTenants: (tenants) => {
-    set({ tenants, isPendingTenant: tenants.length > 0 });
+  setPendingTenants: (pendingTenants) => {
+    set({ pendingTenants, isPendingTenant: pendingTenants.length > 0 });
+  },
+  setAllTenants: (allTenants) => {
+    const { user, tenantId, tenants } = get();
+    saveAuth(user, tenantId, tenants, allTenants);
+    set({ allTenants });
   },
   clearAuth: () => {
-    saveAuth(null, null);
-    set({ user: null, tenantId: null, tenants: null, isPendingTenant: false });
+    saveAuth(null, null, null, null);
+    set({ user: null, tenantId: null, tenants: null, allTenants: null, pendingTenants: null, isPendingTenant: false });
   },
   isAuthenticated: () => get().user !== null && !get().isPendingTenant,
 }));
