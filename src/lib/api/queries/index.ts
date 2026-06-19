@@ -1,3 +1,5 @@
+import type { SearchSpecialistsFilters } from "@/types";
+
 export const queryKeys = {
   tenants: {
     all: ["tenants"] as const,
@@ -68,6 +70,8 @@ export const queryKeys = {
   specialists: {
     all: ["specialists"] as const,
     list: () => [...queryKeys.specialists.all, "list"] as const,
+    search: (filters?: SearchSpecialistsFilters) =>
+      [...queryKeys.specialists.all, "search", filters ?? {}] as const,
     detail: (id: string) =>
       [...queryKeys.specialists.all, "detail", id] as const,
     history: (id: string) =>

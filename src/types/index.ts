@@ -188,3 +188,24 @@ export interface DocumentType {
   name: string;
   description?: string;
 }
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
+export interface ApiResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
+export interface SearchSpecialistsFilters {
+  identificationNumber?: string;
+  firstName?: string;
+  lastName?: string;
+  identificationTypeId?: number;
+  active?: boolean;
+  page?: number;
+  pageSize?: number;
+}

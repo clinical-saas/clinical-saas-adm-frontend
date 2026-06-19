@@ -5,11 +5,12 @@ import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
-import type { Specialist } from "@/types";
+import type { Specialist, ApiResponse, SearchSpecialistsFilters } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 const columns: ColumnDef<Specialist>[] = [
   {
@@ -17,6 +18,10 @@ const columns: ColumnDef<Specialist>[] = [
     header: "Name",
     accessorFn: (row) =>
       [row.first_name, row.last_name].filter(Boolean).join(" "),
+  },
+  {
+    accessorKey: "identification_number",
+    header: "ID Number",
   },
   {
     accessorKey: "email",
@@ -70,33 +75,76 @@ const columns: ColumnDef<Specialist>[] = [
 export default function SpecialistsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.specialists.list(),
-    queryFn: () => apiClient<Specialist[]>("/service-provider"),
+    queryFn: () =>
+      apiClient<ApiResponse<Specialist>>("/service-provider"),
   });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error)
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="text-destructive">
         Error: {error instanceof Error ? error.message : "Unknown error"}
       </div>
     );
+  }
+
+  const specialists = data?.data ?? [];
+  const meta = data?.meta;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Specialists"
+        description={
+          meta ? `${meta.total} specialist${meta.total !== 1 ? "s" : ""} found` : undefined
+        }
         action={
           <Link href="/business-partners/specialists/new">
             <Button>Create Specialist</Button>
           </Link>
         }
       />
-      {data && data.length > 0 ? (
-        <DataTable columns={columns} data={data} />
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-sm font-medium mb-1 block">Identification</label>
+              <input
+                type="text"
+                placeholder="Search by identification..."
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-sm font-medium mb-1 block">Name</label>
+              <input
+                type="text"
+                placeholder="Search by name..."
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            <div className="flex items-end gap-2">
+              <Button variant="outline">Search</Button>
+              <Button variant="ghost">Clear</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {specialists.length > 0 ? (
+        <DataTable columns={columns} data={specialists} />
       ) : (
         <EmptyState
-          title="No specialists"
-          description="Get started by creating your first specialist."
+          title="No specialists found"
+          description="Try adjusting your search criteria or create a new specialist."
           action={
             <Link href="/business-partners/specialists/new">
               <Button>Create Specialist</Button>
