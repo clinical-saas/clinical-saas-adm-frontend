@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import type { Specialist } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
+import { CommercialRelationChips } from "@/components/shared/commercial-relation-chips";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -91,12 +92,12 @@ export default function SpecialistDetailPage() {
               <p className="font-medium">{data.short_address || data.address || "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Roles</p>
-              <p className="font-medium">
-                {[data.is_supplier && "Proveedor", data.is_agent && "Agente", data.is_customer && "Cliente"]
-                  .filter(Boolean)
-                  .join(", ") || "—"}
-              </p>
+              <p className="text-sm text-muted-foreground">Relación Comercial</p>
+              <CommercialRelationChips
+                isSupplier={data.is_supplier}
+                isAgent={data.is_agent}
+                isCustomer={data.is_customer}
+              />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Estado</p>

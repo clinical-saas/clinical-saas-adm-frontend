@@ -75,6 +75,14 @@ export default function LoginPage() {
         code: '',
         businessName: t.name,
       }));
+
+      if (!userTenants || userTenants.length === 0) {
+        setError('No puede iniciar sesión porque no tiene tenants asociados.');
+        useAuthStore.getState().clearAuth();
+        router.push('/login');
+        return;
+      }
+
       setAuth(success.user, success.tenantId, userTenants);
 
       const tenantIds = userTenants?.map((t) => t.id) ?? [];

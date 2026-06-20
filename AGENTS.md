@@ -5,9 +5,9 @@ Stack: Next.js 16 · TypeScript · TailwindCSS v4 · Shadcn/ui · TanStack Query
 
 ## Documentación de referencia
 
-- `_docs/18-ADM_FRONTEND_PLAN.md` — Plan de implementación completo
+- `_plans/16-ADM_FRONTEND_PLAN.md` — Plan de implementación completo
 - `_docs/01-DOMAIN_MAP.md` — Mapa de dominios y entidades
-- `_docs/10-BFF_ROUTE_PLAN.md` — Endpoints del BFF
+- `_plans/14-BFF_ROUTE_PLAN.md` — Endpoints del BFF
 
 ## Contexto del ecosistema
 

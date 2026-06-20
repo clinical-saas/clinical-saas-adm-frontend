@@ -130,8 +130,8 @@ docker compose --profile adm-frontend up               # Con perfil
 | :--- | :--- |
 | `_docs/00-INDICE.md` | Índice general del ecosistema |
 | `_docs/13-ENV_VARS_REFERENCE.md` | Referencia completa de env vars |
-| `_docs/18-ADM_FRONTEND_PLAN.md` | Plan de implementación completo (67 páginas) |
-| `_docs/21-FRONTEND_AUTH_PLAN.md` | Plan de auth en frontends (cookies, guards) |
+| `_plans/16-ADM_FRONTEND_PLAN.md` | Plan de implementación completo (67 páginas) |
+| `_plans/18-FRONTEND_AUTH_PLAN.md` | Plan de auth en frontends (cookies, guards) |
 | `_docs/25-TECHNICAL_LIMITATIONS.md` | Limitaciones técnicas |
 | `_docs/29-DECISION_LOG.md` | Decisiones arquitectónicas |
 | `CLAUDE.md` | Instrucciones para agentes AI |

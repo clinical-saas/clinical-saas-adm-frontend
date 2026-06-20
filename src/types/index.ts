@@ -201,11 +201,12 @@ export interface ApiResponse<T> {
 }
 
 export interface SearchSpecialistsFilters {
-  identificationNumber?: string;
-  firstName?: string;
-  lastName?: string;
-  identificationTypeId?: number;
-  active?: boolean;
+  search?: string;
   page?: number;
   pageSize?: number;
+  order?: string;
+  filterApplyVersion?: number;
+  tenantIds?: string[];
+  businessUnitIds?: string[];
+  statuses?: string[];
 }

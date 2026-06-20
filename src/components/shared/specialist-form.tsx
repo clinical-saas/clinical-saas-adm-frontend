@@ -27,6 +27,10 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { CommercialRelationChips } from "@/components/shared/commercial-relation-chips";
+import { NameInput } from "@/components/shared/name-input";
+import { PhoneInput } from "@/components/shared/phone-input";
+import { EmailInput } from "@/components/shared/email-input";
 
 const formSchema = z.object({
   providerId: z.string().uuid().optional(),
@@ -161,13 +165,7 @@ export function SpecialistForm({
     return age;
   }, [form.watch("birthDate")]);
 
-  const watchedRoleChips = form.watch(["isSupplier", "isAgent", "isCustomer"]);
-
-  const roleChips = [
-    { key: "isSupplier", label: "Proveedor", active: !!watchedRoleChips[0] },
-    { key: "isAgent", label: "Agente", active: !!watchedRoleChips[1] },
-    { key: "isCustomer", label: "Cliente", active: !!watchedRoleChips[2] },
-  ];
+  const watchedValues = form.watch(["isSupplier", "isAgent", "isCustomer"]);
 
   return (
     <Form {...form}>
@@ -263,17 +261,11 @@ export function SpecialistForm({
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
           <FormItem>
             <FormLabel>Relación Comercial</FormLabel>
-            <div className="flex flex-wrap gap-2">
-              {roleChips.map((chip) => (
-                <span
-                  key={chip.key}
-                  data-active={chip.active}
-                  className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
-                >
-                  {chip.label}
-                </span>
-              ))}
-            </div>
+            <CommercialRelationChips
+              isSupplier={watchedValues[0]}
+              isAgent={watchedValues[1]}
+              isCustomer={watchedValues[2]}
+            />
           </FormItem>
         </div>
 
@@ -352,7 +344,12 @@ export function SpecialistForm({
               <FormItem>
                 <FormLabel>Nombres</FormLabel>
                 <FormControl>
-                  <Input placeholder="Juan" {...field} />
+                  <NameInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="Juan"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -366,7 +363,12 @@ export function SpecialistForm({
               <FormItem>
                 <FormLabel>Apellidos</FormLabel>
                 <FormControl>
-                  <Input placeholder="Perez" {...field} />
+                  <NameInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="Perez"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -417,7 +419,12 @@ export function SpecialistForm({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="juan@example.com" {...field} />
+                  <EmailInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="juan@example.com"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -431,7 +438,12 @@ export function SpecialistForm({
               <FormItem>
                 <FormLabel>Telefono</FormLabel>
                 <FormControl>
-                  <Input placeholder="+1234567890" {...field} />
+                  <PhoneInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="+XX-XXX-XXX-XXXX"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
