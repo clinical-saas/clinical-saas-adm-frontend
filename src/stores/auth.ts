@@ -17,6 +17,12 @@ export type PendingTenantInfo = {
   name: string;
 };
 
+export type BusinessUnitInfo = {
+  id: string;
+  tenantId: string;
+  businessName: string;
+};
+
 type AuthState = {
   user: AuthUser | null;
   tenantId: string | null;
@@ -24,9 +30,11 @@ type AuthState = {
   allTenants: TenantInfo[] | null;
   pendingTenants: PendingTenantInfo[] | null;
   isPendingTenant: boolean;
+  businessUnits: BusinessUnitInfo[] | null;
   setAuth: (user: AuthUser, tenantId: string, tenants?: TenantInfo[]) => void;
   setPendingTenants: (tenants: PendingTenantInfo[]) => void;
   setAllTenants: (tenants: TenantInfo[]) => void;
+  setBusinessUnits: (businessUnits: BusinessUnitInfo[]) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
 };
@@ -78,6 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   ...loadAuth(),
   pendingTenants: null,
   isPendingTenant: false,
+  businessUnits: null,
   setAuth: (user, tenantId, tenants) => {
     const currentAllTenants = get().allTenants;
     saveAuth(user, tenantId, tenants ?? null, currentAllTenants ?? null);
@@ -91,9 +100,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     saveAuth(user, tenantId, tenants, allTenants);
     set({ allTenants });
   },
+  setBusinessUnits: (businessUnits) => {
+    set({ businessUnits });
+  },
   clearAuth: () => {
     saveAuth(null, null, null, null);
-    set({ user: null, tenantId: null, tenants: null, allTenants: null, pendingTenants: null, isPendingTenant: false });
+    set({ user: null, tenantId: null, tenants: null, allTenants: null, pendingTenants: null, isPendingTenant: false, businessUnits: null });
   },
   isAuthenticated: () => get().user !== null && !get().isPendingTenant,
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,6 +31,7 @@ import {
 const formSchema = z.object({
   providerId: z.string().uuid().optional(),
   tenantId: z.string().uuid(),
+  businessUnitIds: z.array(z.string().uuid()).min(1, "Unidades de negocio requerido"),
   active: z.boolean(),
   firstName: z.string().min(1, "Nombres requerido"),
   lastName: z.string().min(1, "Apellidos requerido"),
@@ -73,6 +74,7 @@ export function SpecialistForm({
   mode,
 }: SpecialistFormProps) {
   const tenants = useAuthStore((s) => s.tenants);
+  const businessUnits = useAuthStore((s) => s.businessUnits);
 
   const { data: identificationTypes } = useQuery({
     queryKey: queryKeys.identificationTypes.list(),
@@ -84,6 +86,7 @@ export function SpecialistForm({
     defaultValues: {
       providerId: undefined,
       tenantId: "",
+      businessUnitIds: [],
       active: true,
       firstName: "",
       lastName: "",
@@ -101,6 +104,50 @@ export function SpecialistForm({
       ...defaultValues,
     },
   });
+
+  const watchedTenantId = form.watch("tenantId");
+  const watchedBusinessUnitIds = form.watch("businessUnitIds");
+
+  const filteredBusinessUnits = useMemo(() => {
+    if (!watchedTenantId || !businessUnits) return [];
+    return businessUnits.filter((bu) => bu.tenantId === watchedTenantId);
+  }, [watchedTenantId, businessUnits]);
+
+  const isAllBusinessUnitsSelected = useMemo(() => {
+    if (filteredBusinessUnits.length === 0) return false;
+    return filteredBusinessUnits.every((bu) => watchedBusinessUnitIds.includes(bu.id));
+  }, [filteredBusinessUnits, watchedBusinessUnitIds]);
+
+  useEffect(() => {
+    if (watchedTenantId) {
+      form.setValue("businessUnitIds", [], { shouldValidate: true });
+    }
+  }, [watchedTenantId, form]);
+
+  const toggleBusinessUnit = (buId: string) => {
+    const current = form.getValues("businessUnitIds");
+    if (current.includes(buId)) {
+      form.setValue(
+        "businessUnitIds",
+        current.filter((id) => id !== buId),
+        { shouldValidate: true }
+      );
+    } else {
+      form.setValue("businessUnitIds", [...current, buId], { shouldValidate: true });
+    }
+  };
+
+  const toggleAllBusinessUnits = () => {
+    if (isAllBusinessUnitsSelected) {
+      form.setValue("businessUnitIds", [], { shouldValidate: true });
+    } else {
+      form.setValue(
+        "businessUnitIds",
+        filteredBusinessUnits.map((bu) => bu.id),
+        { shouldValidate: true }
+      );
+    }
+  };
 
   const age = useMemo(() => {
     const bd = form.watch("birthDate");
@@ -176,7 +223,46 @@ export function SpecialistForm({
           />
 
           <FormItem>
-            <FormLabel>Roles</FormLabel>
+            <FormLabel>Unidades de Negocio</FormLabel>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {filteredBusinessUnits.length > 0 && (
+                  <>
+                    <span
+                      onClick={toggleAllBusinessUnits}
+                      data-active={isAllBusinessUnitsSelected}
+                      className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
+                    >
+                      {isAllBusinessUnitsSelected ? "Deseleccionar todos" : "Seleccionar todos"}
+                    </span>
+                    {filteredBusinessUnits.map((bu) => (
+                      <span
+                        key={bu.id}
+                        onClick={() => toggleBusinessUnit(bu.id)}
+                        data-active={watchedBusinessUnitIds.includes(bu.id)}
+                        className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
+                      >
+                        {bu.businessName}
+                      </span>
+                    ))}
+                  </>
+                )}
+                {filteredBusinessUnits.length === 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {watchedTenantId ? "Sin unidades de negocio" : "Selecciona un tenant primero"}
+                  </span>
+                )}
+              </div>
+              {form.formState.errors.businessUnitIds && (
+                <FormMessage />
+              )}
+            </div>
+          </FormItem>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+          <FormItem>
+            <FormLabel>Relación Comercial</FormLabel>
             <div className="flex flex-wrap gap-2">
               {roleChips.map((chip) => (
                 <span

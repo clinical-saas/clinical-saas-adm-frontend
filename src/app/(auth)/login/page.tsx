@@ -76,6 +76,22 @@ export default function LoginPage() {
         businessName: t.name,
       }));
       setAuth(success.user, success.tenantId, userTenants);
+
+      const tenantIds = userTenants?.map((t) => t.id) ?? [];
+      if (tenantIds.length > 0) {
+        const busRes = await apiClient<Array<{ id: string; tenant_id: string; business_name: string }>>(
+          `/business-unit/by-tenants?tenant_ids=${tenantIds.join(',')}`
+        );
+        const { setBusinessUnits } = useAuthStore.getState();
+        setBusinessUnits(
+          busRes.map((b) => ({
+            id: b.id,
+            tenantId: b.tenant_id,
+            businessName: b.business_name,
+          }))
+        );
+      }
+
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
