@@ -19,9 +19,10 @@ export default function CreateSpecialistPage() {
   const onSubmit = async (values: SpecialistFormValues) => {
     setError(null);
     try {
+      const { providerId: _, businessUnitIds: __, ...payload } = values;
       await apiClient("/service-provider", {
         method: "POST",
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       router.push("/business-partners/specialists");
     } catch (err) {

@@ -28,11 +28,12 @@ export default function EditSpecialistPage() {
   const onSubmit = async (values: SpecialistFormValues) => {
     setError(null);
     try {
+      const { providerId: _, businessUnitIds: __, ...payload } = values;
       await apiClient(`/service-provider/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
-      router.push(`/business-partners/specialists/${id}`);
+      router.push(`/business-partners/specialists`);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
@@ -49,6 +50,13 @@ export default function EditSpecialistPage() {
   if (isLoading) return <div>Loading...</div>;
 
   if (!data) return <div>Specialist not found</div>;
+
+  const formatDate = (dateStr: string | null): string => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().split("T")[0];
+  };
 
   return (
     <div className="space-y-6">
@@ -74,7 +82,7 @@ export default function EditSpecialistPage() {
               active: data.active,
               firstName: data.first_name ?? "",
               lastName: data.last_name ?? "",
-              birthDate: data.birth_date ?? "",
+              birthDate: formatDate(data.birth_date),
               shortAddress: data.short_address ?? "",
               address: data.address ?? "",
               email: data.email ?? "",
