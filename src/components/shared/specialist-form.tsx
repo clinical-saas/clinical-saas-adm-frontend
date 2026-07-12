@@ -78,7 +78,6 @@ export function SpecialistForm({
   mode,
 }: SpecialistFormProps) {
   const tenants = useAuthStore((s) => s.tenants);
-  const businessUnits = useAuthStore((s) => s.businessUnits);
 
   const { data: identificationTypes } = useQuery({
     queryKey: queryKeys.identificationTypes.list(),
@@ -112,10 +111,18 @@ export function SpecialistForm({
   const watchedTenantId = form.watch("tenantId");
   const watchedBusinessUnitIds = form.watch("businessUnitIds");
 
+  const { data: tenantBusinessUnits } = useQuery({
+    queryKey: ["specialist-form-business-units", watchedTenantId],
+    queryFn: () =>
+      apiClient<Array<{ id: string; business_name: string; active: boolean }>>(
+        `/business-unit/by-tenants?tenant_ids=${watchedTenantId}`,
+      ),
+    enabled: Boolean(watchedTenantId),
+  });
+
   const filteredBusinessUnits = useMemo(() => {
-    if (!watchedTenantId || !businessUnits) return [];
-    return businessUnits.filter((bu) => bu.tenantId === watchedTenantId);
-  }, [watchedTenantId, businessUnits]);
+    return (tenantBusinessUnits ?? []).filter((bu) => bu.active);
+  }, [tenantBusinessUnits]);
 
   const isAllBusinessUnitsSelected = useMemo(() => {
     if (filteredBusinessUnits.length === 0) return false;
@@ -245,7 +252,7 @@ export function SpecialistForm({
                         data-active={watchedBusinessUnitIds.includes(bu.id)}
                         className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer data-[active=true]:border-primary data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=false]:border-input data-[active=false]:text-muted-foreground"
                       >
-                        {bu.businessName}
+                        {bu.business_name}
                       </span>
                     ))}
                   </>
