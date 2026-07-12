@@ -23,6 +23,8 @@ export default function CreateSpecialistPage() {
       await apiClient("/service-provider", {
         method: "POST",
         body: JSON.stringify(payload),
+        // Tenant destino: el BFF lo honra solo si el rol es super_admin.
+        headers: { "x-target-tenant-id": values.tenantId },
       });
       router.push("/business-partners/specialists");
     } catch (err) {
