@@ -6,34 +6,39 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
-import type { Specialist } from "@/types";
+import type { BusinessUnit } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  SpecialistForm,
-  type SpecialistFormValues,
-} from "@/components/shared/specialist-form";
+  BusinessUnitForm,
+  type BusinessUnitFormValues,
+} from "@/components/shared/business-unit-form";
 
-export default function EditSpecialistPage() {
+export default function EditBusinessUnitPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.specialists.detail(id),
-    queryFn: () => apiClient<Specialist>(`/service-provider/${id}`),
+    queryKey: queryKeys.businessUnits.detail(id),
+    queryFn: () => apiClient<BusinessUnit>(`/business-unit/${id}`),
   });
 
-  const onSubmit = async (values: SpecialistFormValues) => {
+  const onSubmit = async (values: BusinessUnitFormValues) => {
     setError(null);
     try {
-      const { providerId: _, ...payload } = values; // businessUnitIds viaja al backend
-      await apiClient(`/service-provider/${id}`, {
+      const payload = {
+        ...values,
+        email: values.email || undefined,
+        phone: values.phone || undefined,
+        address: values.address || undefined,
+      };
+      await apiClient(`/business-unit/${id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
-      router.push(`/business-partners/specialists`);
+      router.push("/organization/business-units");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
@@ -47,24 +52,25 @@ export default function EditSpecialistPage() {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        Cargando...
+      </div>
+    );
+  }
 
-  if (!data) return <div>Specialist not found</div>;
-
-  const formatDate = (dateStr: string | null): string => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().split("T")[0];
-  };
+  if (!data) {
+    return <div className="text-destructive">Business Unit no encontrada</div>;
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Edit Specialist"
+        title="Editar Business Unit"
         action={
-          <Link href={`/business-partners/specialists/${id}`}>
-            <Button variant="outline">Cancel</Button>
+          <Link href={`/organization/business-units/${id}`}>
+            <Button variant="outline">Cancelar</Button>
           </Link>
         }
       />
@@ -75,25 +81,15 @@ export default function EditSpecialistPage() {
               {error}
             </div>
           )}
-          <SpecialistForm
+          <BusinessUnitForm
             defaultValues={{
-              providerId: data.id,
               tenantId: data.tenant_id,
-              businessUnitIds: data.businessUnitIds ?? [],
-              active: data.active,
-              firstName: data.first_name ?? "",
-              lastName: data.last_name ?? "",
-              birthDate: formatDate(data.birth_date),
-              shortAddress: data.short_address ?? "",
-              address: data.address ?? "",
+              code: data.code,
+              businessName: data.business_name,
               email: data.email ?? "",
               phone: data.phone ?? "",
-              isSupplier: data.is_supplier,
-              isAgent: data.is_agent,
-              isCustomer: data.is_customer,
-              readonly: data.readonly,
-              identificationTypeId: data.identification_type_id,
-              identificationNumber: data.identification_number,
+              address: data.address ?? "",
+              active: data.active,
             }}
             onSubmit={onSubmit}
             mode="edit"

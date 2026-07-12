@@ -6,10 +6,31 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import type { BusinessUnit } from "@/types";
+import type { TenantLite } from "@/components/shared/business-unit-form";
 import { PageHeader } from "@/components/shared/page-header";
+import { PhoneFormatter } from "@/components/shared/phone-formatter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="font-medium break-words">{value}</p>
+    </div>
+  );
+}
+
+function fmtDate(value: string | null): string {
+  if (!value) {
+    return "—";
+  }
+  const d = new Date(value);
+  if (isNaN(d.getTime())) {
+    return "—";
+  }
+  return d.toLocaleString();
+}
 
 export default function BusinessUnitDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,54 +40,90 @@ export default function BusinessUnitDetailPage() {
     queryFn: () => apiClient<BusinessUnit>(`/business-unit/${id}`),
   });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error)
+  const { data: tenants } = useQuery({
+    queryKey: queryKeys.tenants.list(),
+    queryFn: () => apiClient<TenantLite[]>("/tenant"),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        Cargando...
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="text-destructive">
         Error: {error instanceof Error ? error.message : "Unknown error"}
       </div>
     );
+  }
 
-  if (!data) return null;
+  if (!data) {
+    return null;
+  }
+
+  const tenantName = tenants?.find((t) => t.id === data.tenant_id)?.business_name ?? data.tenant_id;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Business Unit Details"
+        title="Detalle Business Unit"
         action={
-          <Link href="/organization/business-units">
-            <Button variant="outline">Back</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/organization/business-units/${id}/edit`}>
+              <Button>Editar</Button>
+            </Link>
+            <Link href="/organization/business-units">
+              <Button variant="outline">Volver</Button>
+            </Link>
+          </div>
         }
       />
+
       <Card>
         <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Code</p>
-              <p className="font-medium">{data.code}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="font-medium">{data.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tenant ID</p>
-              <p className="font-medium">{data.tenantId}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                  data.isActive
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-                )}
-              >
-                {data.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
+            <Field label="Código" value={data.code} />
+            <Field label="Nombre Comercial" value={data.business_name} />
+            <Field label="Tenant" value={tenantName} />
+            <Field
+              label="Status"
+              value={
+                data.active ? (
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                    Activo
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                    Inactivo
+                  </span>
+                )
+              }
+            />
+            <Field label="Email" value={data.email ?? "—"} />
+            <Field label="Teléfono" value={<PhoneFormatter phone={data.phone} />} />
+            <Field label="Dirección" value={data.address ?? "—"} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <p className="text-sm font-semibold text-muted-foreground">Auditoría</p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Creado" value={fmtDate(data.created_at)} />
+            <Field label="Creado por" value={data.created_by ?? "—"} />
+            <Field label="Actualizado" value={fmtDate(data.updated_at)} />
+            <Field label="Actualizado por" value={data.updated_by ?? "—"} />
+            {data.removed_at && (
+              <>
+                <Field label="Eliminado" value={fmtDate(data.removed_at)} />
+                <Field label="Eliminado por" value={data.removed_by ?? "—"} />
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

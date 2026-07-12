@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -122,10 +122,15 @@ export function SpecialistForm({
     return filteredBusinessUnits.every((bu) => watchedBusinessUnitIds.includes(bu.id));
   }, [filteredBusinessUnits, watchedBusinessUnitIds]);
 
+  const prevTenantId = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (watchedTenantId) {
+    if (
+      prevTenantId.current !== undefined &&
+      prevTenantId.current !== watchedTenantId
+    ) {
       form.setValue("businessUnitIds", [], { shouldValidate: true });
     }
+    prevTenantId.current = watchedTenantId;
   }, [watchedTenantId, form]);
 
   const toggleBusinessUnit = (buId: string) => {

@@ -19,7 +19,7 @@ export default function CreateSpecialistPage() {
   const onSubmit = async (values: SpecialistFormValues) => {
     setError(null);
     try {
-      const { providerId: _, businessUnitIds: __, ...payload } = values;
+      const { providerId: _, ...payload } = values; // businessUnitIds viaja al backend
       await apiClient("/service-provider", {
         method: "POST",
         body: JSON.stringify(payload),

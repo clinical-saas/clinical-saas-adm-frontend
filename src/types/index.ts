@@ -10,11 +10,19 @@ export interface Tenant {
 
 export interface BusinessUnit {
   id: string;
+  tenant_id: string;
   code: string;
-  name: string;
-  tenantId: string;
-  isActive: boolean;
-  createdAt: string;
+  business_name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  active: boolean;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string | null;
+  updated_by: string | null;
+  removed_at: string | null;
+  removed_by: string | null;
 }
 
 export interface Role {
@@ -94,6 +102,7 @@ export interface Specialist {
   active: boolean;
   readonly: boolean;
   extra_data: Record<string, unknown> | null;
+  businessUnitIds?: string[];
   created_at: string;
   updated_at: string | null;
 }

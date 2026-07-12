@@ -181,7 +181,7 @@ export default function SpecialistsPage() {
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const endpoint = active ? `/service-provider/${id}/disable` : `/service-provider/${id}/enable`;
-      return apiClient<Specialist>(endpoint, { method: "PATCH" });
+      return apiClient<Specialist>(endpoint, { method: "PATCH", body: JSON.stringify({}) });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specialists.all });

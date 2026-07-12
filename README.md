@@ -19,7 +19,7 @@ Panel de administración multi-tenant. Next.js 16 + TypeScript + TailwindCSS + S
 
 **3011** — Configurado via `PORT` env var y script `dev`.
 
-> El puerto 3011 está reservado para este frontend. NO usar 3000 (frontend cliente) ni 3001 (Document Engine). Ver `_docs/13-ENV_VARS_REFERENCE.md`.
+> El puerto 3011 está reservado para este frontend. NO usar 3000 (frontend cliente) ni 3001 (Document Engine). Ver `_docs/08-ENV_VARS_REFERENCE.md`.
 
 ### Importante
 
@@ -33,7 +33,7 @@ Ninguna variable de entorno se cablea en el código. Siempre `process.env.VAR ||
 
 ### Regla #2 — Comunicación exclusiva via BFF
 
-El frontend SIEMPRE habla con el BFF (`http://localhost:4000/api`), NUNCA directamente con microservicios. El BFF es el único boundary de seguridad (ver `_docs/29-DECISION_LOG.md` D005).
+El frontend SIEMPRE habla con el BFF (`http://localhost:4000/api`), NUNCA directamente con microservicios. El BFF es el único boundary de seguridad (ver `_docs/16-DECISION_LOG.md` D005).
 
 ### Regla #3 — Auth via cookies httpOnly
 
@@ -87,7 +87,7 @@ NEXT_PUBLIC_ENABLE_SIGNUP=false
 NEXT_PUBLIC_ENABLE_TENANT_CREATION=true
 ```
 
-> Referencia completa: `_docs/13-ENV_VARS_REFERENCE.md`.
+> Referencia completa: `_docs/08-ENV_VARS_REFERENCE.md`.
 
 ## Estructura del proyecto
 
@@ -129,9 +129,9 @@ docker compose --profile adm-frontend up               # Con perfil
 | Documento | Contenido |
 | :--- | :--- |
 | `_docs/00-INDICE.md` | Índice general del ecosistema |
-| `_docs/13-ENV_VARS_REFERENCE.md` | Referencia completa de env vars |
+| `_docs/08-ENV_VARS_REFERENCE.md` | Referencia completa de env vars |
 | `_plans/16-ADM_FRONTEND_PLAN.md` | Plan de implementación completo (67 páginas) |
 | `_plans/18-FRONTEND_AUTH_PLAN.md` | Plan de auth en frontends (cookies, guards) |
-| `_docs/25-TECHNICAL_LIMITATIONS.md` | Limitaciones técnicas |
-| `_docs/29-DECISION_LOG.md` | Decisiones arquitectónicas |
+| `_docs/14-TECHNICAL_LIMITATIONS.md` | Limitaciones técnicas |
+| `_docs/16-DECISION_LOG.md` | Decisiones arquitectónicas |
 | `CLAUDE.md` | Instrucciones para agentes AI |
