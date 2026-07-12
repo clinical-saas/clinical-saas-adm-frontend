@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { sanitizeDigits, formatPhone } from "@/lib/utils";
 
@@ -22,13 +22,15 @@ export function PhoneInput({
   className,
 }: PhoneInputProps) {
   // Display formatted value visually, but internal form value is clean digits
-  const [displayValue, setDisplayValue] = useState("");
+  const [displayValue, setDisplayValue] = useState(value ? formatPhone(value) : "");
+  const [prevValue, setPrevValue] = useState(value);
 
-  useEffect(() => {
-    // When external value changes (e.g., form reset), update display
-    const formatted = value ? formatPhone(value) : "";
-    setDisplayValue(formatted);
-  }, [value]);
+  // Adjust display during render when the external value prop changes
+  // (e.g. form reset). This replaces a setState-in-effect antipattern.
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setDisplayValue(value ? formatPhone(value) : "");
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Extract only digits

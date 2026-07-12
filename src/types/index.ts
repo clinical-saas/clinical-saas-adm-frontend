@@ -103,8 +103,13 @@ export interface Specialist {
   readonly: boolean;
   extra_data: Record<string, unknown> | null;
   businessUnitIds?: string[];
+  business_units?: Array<{ id: string; business_name: string }>;
   created_at: string;
+  created_by: string | null;
   updated_at: string | null;
+  updated_by: string | null;
+  removed_at: string | null;
+  removed_by: string | null;
 }
 
 export interface ServiceCategory {

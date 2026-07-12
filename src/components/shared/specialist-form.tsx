@@ -28,6 +28,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { CommercialRelationChips } from "@/components/shared/commercial-relation-chips";
+import { InfoHint } from "@/components/shared/info-hint";
 import { NameInput } from "@/components/shared/name-input";
 import { PhoneInput } from "@/components/shared/phone-input";
 import { EmailInput } from "@/components/shared/email-input";
@@ -272,7 +273,10 @@ export function SpecialistForm({
 
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
           <FormItem>
-            <FormLabel>Relación Comercial</FormLabel>
+            <FormLabel>
+              Relación Comercial{" "}
+              <InfoHint text="Campo de solo lectura, no editable" />
+            </FormLabel>
             <CommercialRelationChips
               isSupplier={watchedValues[0]}
               isAgent={watchedValues[1]}

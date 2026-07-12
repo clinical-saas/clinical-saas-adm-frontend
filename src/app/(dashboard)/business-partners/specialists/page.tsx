@@ -85,7 +85,6 @@ export default function SpecialistsPage() {
 
   const [sorting, setSorting] = useState<{ id: string; desc: boolean } | null>(null);
 
-  const isInitialMount = useRef(true);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [filterApplyVersion, setFilterApplyVersion] = useState(0);
 
@@ -96,26 +95,25 @@ export default function SpecialistsPage() {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  useEffect(() => {
-    if (tenants && tenants.length === 1) {
-      setSelectedTenantIds([tenants[0].id]);
-    } else if (tenants && tenants.length > 0) {
+  // Seed the tenant filter with all available tenants when they load.
+  // Adjust during render (not in an effect) to avoid cascading renders;
+  // re-seeds only when the tenants list identity changes, so a user
+  // deselection is preserved.
+  const [prevTenants, setPrevTenants] = useState(tenants);
+  if (tenants !== prevTenants) {
+    setPrevTenants(tenants);
+    if (tenants && tenants.length > 0) {
       setSelectedTenantIds(tenants.map((t) => t.id));
     }
-  }, [tenants]);
+  }
 
+  // Focus the search input on mount (side effect → stays in an effect).
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (tenants && tenants.length > 1) {
-        setSelectedTenantIds(tenants.map((t) => t.id));
-      }
-      const timer = setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [tenants]);
+    const timer = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredBusinessUnits = useMemo(() => {
     if (!businessUnits) return [];
