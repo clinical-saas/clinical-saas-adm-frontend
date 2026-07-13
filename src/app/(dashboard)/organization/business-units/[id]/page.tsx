@@ -8,6 +8,7 @@ import { queryKeys } from "@/lib/api/queries";
 import type { BusinessUnit } from "@/types";
 import type { TenantLite } from "@/components/shared/business-unit-form";
 import { PageHeader } from "@/components/shared/page-header";
+import { TenantChip } from "@/components/shared/tenant-chip";
 import { PhoneFormatter } from "@/components/shared/phone-formatter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,9 +87,9 @@ export default function BusinessUnitDetailPage() {
       <Card>
         <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-2 gap-4">
+            <Field label="Tenant" value={<TenantChip name={tenantName} />} />
             <Field label="Código" value={data.code} />
             <Field label="Nombre Comercial" value={data.business_name} />
-            <Field label="Tenant" value={tenantName} />
             <Field
               label="Status"
               value={
