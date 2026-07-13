@@ -10,6 +10,7 @@ import { queryKeys } from "@/lib/api/queries";
 import type { BusinessUnit } from "@/types";
 import type { TenantLite } from "@/components/shared/business-unit-form";
 import { PageHeader } from "@/components/shared/page-header";
+import { StatusChip } from "@/components/shared/status-chip";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableActionCell } from "@/components/shared/data-table-action-cell";
@@ -17,18 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { PageSize } from "@/components/shared/pagination";
-
-function StatusChip({ active }: { active: boolean }) {
-  return active ? (
-    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-      Activo
-    </span>
-  ) : (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Inactivo
-    </span>
-  );
-}
 
 export default function BusinessUnitsPage() {
   const router = useRouter();

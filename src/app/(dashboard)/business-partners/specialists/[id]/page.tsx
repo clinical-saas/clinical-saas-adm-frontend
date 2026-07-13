@@ -5,38 +5,20 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
+import { fmtDateOnly } from "@/lib/format";
 import type { Specialist, IdentificationType } from "@/types";
 import type { TenantLite } from "@/components/shared/business-unit-form";
 import { PageHeader } from "@/components/shared/page-header";
 import { CommercialRelationChips } from "@/components/shared/commercial-relation-chips";
 import { PhoneFormatter } from "@/components/shared/phone-formatter";
 import { InfoHint } from "@/components/shared/info-hint";
+import { TenantChip } from "@/components/shared/tenant-chip";
+import { BusinessUnitChips } from "@/components/shared/business-unit-chips";
+import { StatusChip } from "@/components/shared/status-chip";
+import { ReadonlyChip } from "@/components/shared/readonly-chip";
+import { AuditSection } from "@/components/shared/audit-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
-function fmtDate(value: string | null): string {
-  if (!value) {
-    return "—";
-  }
-  const d = new Date(value);
-  if (isNaN(d.getTime())) {
-    return "—";
-  }
-  return d.toLocaleString();
-}
-
-function fmtDateOnly(value: string | null): string {
-  if (!value) {
-    return "—";
-  }
-  const d = new Date(value);
-  if (isNaN(d.getTime())) {
-    return "—";
-  }
-  // birth_date is a calendar date stored as UTC timestamptz. Format in UTC so
-  // a negative local offset does not shift it back one day.
-  return d.toLocaleDateString(undefined, { timeZone: "UTC" });
-}
 
 function calculateAge(birthDate: string | null): number | null {
   if (!birthDate) {
@@ -53,66 +35,6 @@ function calculateAge(birthDate: string | null): number | null {
     age--;
   }
   return age;
-}
-
-function TenantChip({ name }: { name: string }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-      {name}
-    </span>
-  );
-}
-
-function BusinessUnitChips({
-  units,
-}: {
-  units: Array<{ id: string; business_name: string }> | undefined;
-}) {
-  if (!units || units.length === 0) {
-    return <span className="text-muted-foreground">—</span>;
-  }
-  return (
-    <div className="flex flex-wrap gap-1">
-      {units.map((u) => (
-        <span
-          key={u.id}
-          className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs whitespace-nowrap"
-        >
-          {u.business_name || u.id}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function StatusChip({ active }: { active: boolean }) {
-  if (active) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Activo
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Inactivo
-    </span>
-  );
-}
-
-function ReadonlyChip({ readonly }: { readonly: boolean }) {
-  if (readonly) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-gray-900 px-2.5 py-0.5 text-xs font-medium text-white dark:bg-gray-100 dark:text-gray-900">
-        Solo lectura
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-      Editable
-    </span>
-  );
 }
 
 export default function SpecialistDetailPage() {
@@ -253,41 +175,14 @@ export default function SpecialistDetailPage() {
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <p className="text-sm font-semibold text-muted-foreground">Auditoría</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Creado</p>
-              <p className="font-medium">{fmtDate(data.created_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Creado por</p>
-              <p className="font-medium">{data.created_by || "—"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Actualizado</p>
-              <p className="font-medium">{fmtDate(data.updated_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Actualizado por</p>
-              <p className="font-medium">{data.updated_by || "—"}</p>
-            </div>
-            {data.removed_at && (
-              <>
-                <div>
-                  <p className="text-sm text-muted-foreground">Eliminado</p>
-                  <p className="font-medium">{fmtDate(data.removed_at)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Eliminado por</p>
-                  <p className="font-medium">{data.removed_by || "—"}</p>
-                </div>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <AuditSection
+        createdAt={data.created_at}
+        createdBy={data.created_by}
+        updatedAt={data.updated_at}
+        updatedBy={data.updated_by}
+        removedAt={data.removed_at}
+        removedBy={data.removed_by}
+      />
       <div className="flex gap-2">
         <Link href={`/business-partners/specialists/${id}/edit`}>
           <Button variant="outline">Editar</Button>

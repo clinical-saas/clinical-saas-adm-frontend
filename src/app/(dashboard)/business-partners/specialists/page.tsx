@@ -8,6 +8,8 @@ import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import type { Specialist, ApiResponse, SearchSpecialistsFilters } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
+import { StatusChip } from "@/components/shared/status-chip";
+import { BusinessUnitChips } from "@/components/shared/business-unit-chips";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
@@ -36,34 +38,6 @@ function calculateAge(birthDate: string | null): number | null {
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
   return age;
-}
-
-function StatusChip({ active }: { active: boolean }) {
-  return active ? (
-    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-      Activo
-    </span>
-  ) : (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Inactivo
-    </span>
-  );
-}
-
-function BusinessUnitChips({ units }: { units: Array<{ id: string; business_name: string }> | undefined }) {
-  if (!units || units.length === 0) return <span className="text-muted-foreground">—</span>;
-  return (
-    <div className="flex flex-wrap gap-1 max-w-[300px]">
-      {units.map((u) => (
-        <span
-          key={u.id}
-          className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs whitespace-nowrap"
-        >
-          {u.business_name}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 export default function SpecialistsPage() {
@@ -284,7 +258,9 @@ export default function SpecialistsPage() {
     {
       id: "business_units",
       header: "Unidades de Negocio",
-      cell: ({ row }) => <BusinessUnitChips units={row.original.business_units} />,
+      cell: ({ row }) => (
+        <BusinessUnitChips units={row.original.business_units} className="max-w-[300px]" />
+      ),
     },
     {
       accessorKey: "active",
