@@ -6,7 +6,9 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateCustomerPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
@@ -52,6 +55,7 @@ export default function CreateCustomerPage() {
         method: "POST",
         body: JSON.stringify(values),
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
       router.push("/business-partners/customers");
     } catch (err) {
       if (err instanceof ApiError) {

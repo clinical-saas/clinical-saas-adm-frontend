@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import type { BusinessUnit } from "@/types";
@@ -18,6 +18,7 @@ import {
 export default function EditBusinessUnitPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -38,6 +39,7 @@ export default function EditBusinessUnitPage() {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.businessUnits.all });
       router.push("/organization/business-units");
     } catch (err) {
       if (err instanceof ApiError) {

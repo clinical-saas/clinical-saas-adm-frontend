@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import type { Specialist } from "@/types";
@@ -18,6 +18,7 @@ import {
 export default function EditSpecialistPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -33,6 +34,7 @@ export default function EditSpecialistPage() {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.specialists.all });
       router.push(`/business-partners/specialists`);
     } catch (err) {
       if (err instanceof ApiError) {

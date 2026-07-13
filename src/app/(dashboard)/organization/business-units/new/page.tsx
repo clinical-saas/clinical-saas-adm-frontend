@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +16,7 @@ import {
 
 export default function CreateBusinessUnitPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (values: BusinessUnitFormValues) => {
@@ -29,6 +32,7 @@ export default function CreateBusinessUnitPage() {
         method: "POST",
         body: JSON.stringify(payload),
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.businessUnits.all });
       router.push("/organization/business-units");
     } catch (err) {
       if (err instanceof ApiError) {

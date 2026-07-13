@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +16,7 @@ import {
 
 export default function CreateSpecialistPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (values: SpecialistFormValues) => {
@@ -26,6 +29,7 @@ export default function CreateSpecialistPage() {
         // Tenant destino: el BFF lo honra solo si el rol es super_admin.
         headers: { "x-target-tenant-id": values.tenantId },
       });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.specialists.all });
       router.push("/business-partners/specialists");
     } catch (err) {
       if (err instanceof ApiError) {
