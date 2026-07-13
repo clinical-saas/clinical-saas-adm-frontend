@@ -5,52 +5,55 @@ import Link from "next/link";
 import { type ColumnDef } from "@tanstack/react-table";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
-import type { Customer } from "@/types";
+import type { ApiResponse } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { BusinessUnitChips } from "@/components/shared/business-unit-chips";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
 
-const columns: ColumnDef<Customer>[] = [
+// Row shape returned by the customer search projection (ICustomerSearch).
+interface CustomerRow {
+  id: string;
+  identification_number: string;
+  identification_type_id: number;
+  first_name: string | null;
+  last_name: string | null;
+  birth_date?: string | null;
+  age?: number | null;
+  business_units?: Array<{ id: string; business_name: string }>;
+}
+
+const columns: ColumnDef<CustomerRow>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    id: "name",
+    header: "Nombre",
+    cell: ({ row }) => {
+      const name = [row.original.first_name, row.original.last_name]
+        .filter(Boolean)
+        .join(" ");
+      return name || "—";
+    },
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "identification_number",
+    header: "N° Identificación",
+    cell: ({ row }) => row.original.identification_number ?? "—",
   },
   {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => row.original.phone ?? "—",
-  },
-  {
-    accessorKey: "identificationNumber",
-    header: "ID Number",
-    cell: ({ row }) => row.original.identificationNumber ?? "—",
-  },
-  {
-    accessorKey: "isActive",
-    header: "Status",
-    cell: ({ row }) =>
-      row.original.isActive ? (
-        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-          Active
-        </span>
-      ) : (
-        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-          Inactive
-        </span>
-      ),
+    id: "business_units",
+    header: "Unidades de Negocio",
+    cell: ({ row }) => (
+      <BusinessUnitChips units={row.original.business_units} className="max-w-[300px]" />
+    ),
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Acciones",
     cell: ({ row }) => (
       <Link href={`/business-partners/customers/${row.original.id}`}>
         <Button variant="outline" size="xs">
-          View
+          Ver
         </Button>
       </Link>
     ),
@@ -60,16 +63,28 @@ const columns: ColumnDef<Customer>[] = [
 export default function CustomersPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.customers.list(),
-    queryFn: () => apiClient<Customer[]>("/customer"),
+    // Interim: sin tenantIds el backend devuelve todos los tenants (fase multi-tenant).
+    // TODO: paridad de búsqueda/paginación/filtros server con el search de specialist.
+    queryFn: () => apiClient<ApiResponse<CustomerRow>>("/customer?page=1&limit=100"),
   });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error)
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        Cargando...
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="text-destructive">
         Error: {error instanceof Error ? error.message : "Unknown error"}
       </div>
     );
+  }
+
+  const rows = data?.data ?? [];
 
   return (
     <div className="space-y-6">
@@ -77,19 +92,19 @@ export default function CustomersPage() {
         title="Customers"
         action={
           <Link href="/business-partners/customers/new">
-            <Button>Create Customer</Button>
+            <Button>Crear Customer</Button>
           </Link>
         }
       />
-      {data && data.length > 0 ? (
-        <DataTable columns={columns} data={data} />
+      {rows.length > 0 ? (
+        <DataTable columns={columns} data={rows} />
       ) : (
         <EmptyState
-          title="No customers"
-          description="Get started by creating your first customer."
+          title="Sin customers"
+          description="Crea tu primer customer para empezar."
           action={
             <Link href="/business-partners/customers/new">
-              <Button>Create Customer</Button>
+              <Button>Crear Customer</Button>
             </Link>
           }
         />
