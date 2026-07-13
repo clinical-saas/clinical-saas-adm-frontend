@@ -241,3 +241,6 @@ export interface SearchSpecialistsFilters {
   businessUnitIds?: string[];
   statuses?: string[];
 }
+
+// Same shape as SearchSpecialistsFilters (both are business-partner lists).
+export type SearchCustomersFilters = SearchSpecialistsFilters;

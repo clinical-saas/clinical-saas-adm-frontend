@@ -3,57 +3,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  phone: z.string().optional(),
-  identificationType: z.string().optional(),
-  identificationNumber: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+  CustomerForm,
+  type CustomerFormValues,
+} from "@/components/shared/customer-form";
 
 export default function CreateCustomerPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      identificationType: "",
-      identificationNumber: "",
-    },
-  });
-
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: CustomerFormValues) => {
     setError(null);
     try {
+      const { customerId: _, ...payload } = values; // businessUnitIds travels to the backend
       await apiClient("/customer", {
         method: "POST",
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
+        // Target tenant: the BFF honors it only when the role is super_admin.
+        headers: { "x-target-tenant-id": values.tenantId },
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
       router.push("/business-partners/customers");
@@ -82,94 +56,12 @@ export default function CreateCustomerPage() {
       />
       <Card>
         <CardContent className="pt-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="john@example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+1234567890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="identificationType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identification Type</FormLabel>
-                    <FormControl>
-                      <Input placeholder="DNI, PASSPORT, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="identificationNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identification Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="12345678" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Creating..." : "Create"}
-                </Button>
-                <Link href="/business-partners/customers">
-                  <Button type="button" variant="outline">
-                    Cancel
-                  </Button>
-                </Link>
-              </div>
-            </form>
-          </Form>
+          {error && (
+            <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          <CustomerForm onSubmit={onSubmit} mode="create" />
         </CardContent>
       </Card>
     </div>
