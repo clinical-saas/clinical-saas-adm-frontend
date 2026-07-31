@@ -1,6 +1,24 @@
 # Clinical SaaS Admin Frontend
 
-Panel de administración multi-tenant. Next.js 16 + TypeScript + TailwindCSS + Shadcn/ui.
+Panel de administración multi-tenant. **Next.js 16 + TypeScript + TailwindCSS + Shadcn/ui**.
+
+![Next.js](https://img.shields.io/badge/Next.js-16-000000)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4)
+![Zustand](https://img.shields.io/badge/Zustand-5-764ABC)
+
+Frontend administrativo del ecosistema: gestión de tenants, usuarios, roles y permisos, catálogo de servicios, proveedores, inventario y órdenes. Se comunica **exclusivamente** con el [BFF](https://github.com/clinical-saas/clinical-saas-bff) — nunca directamente con los microservicios.
+
+## Ecosystem
+
+| Repo | Rol |
+| :--- | :--- |
+| [clinical-saas-services](https://github.com/clinical-saas/clinical-saas-services) | 8 microservicios del ecosistema |
+| [clinical-saas-bff](https://github.com/clinical-saas/clinical-saas-bff) | Gateway HTTP (único boundary de seguridad) |
+| [clinical-saas-adm-frontend](https://github.com/clinical-saas/clinical-saas-adm-frontend) | **Este repo** — panel de administración |
+| [clinical-saas-frontend](https://github.com/clinical-saas/clinical-saas-frontend) | Frontend web para clientes (Next.js) |
+| [clinical-saas-docs](https://github.com/clinical-saas/clinical-saas-docs) | Documentación técnica completa del ecosistema |
 
 ## Stack
 
@@ -19,13 +37,13 @@ Panel de administración multi-tenant. Next.js 16 + TypeScript + TailwindCSS + S
 
 **3011** — Configurado via `PORT` env var y script `dev`.
 
-> El puerto 3011 está reservado para este frontend. NO usar 3000 (frontend cliente) ni 3001 (Document Engine). Ver `_docs/08-ENV_VARS_REFERENCE.md`.
+> El puerto 3011 está reservado para este frontend. NO usar 3000 (frontend cliente) ni 3001 (Document Engine). Ver [08-ENV_VARS_REFERENCE.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/08-ENV_VARS_REFERENCE.md).
 
 ### Importante
 
 `npm run dev` ejecuta `next dev -p 3011`. No usar `next dev` sin puerto explícito — Next.js default es 3000, que colisiona con el frontend cliente y no coincide con `CORS_ORIGIN_ADM` del BFF.
 
-## Convenciones
+## Development Conventions
 
 ### Regla #1 — Sin valores cableados
 
@@ -33,7 +51,7 @@ Ninguna variable de entorno se cablea en el código. Siempre `process.env.VAR ||
 
 ### Regla #2 — Comunicación exclusiva via BFF
 
-El frontend SIEMPRE habla con el BFF (`http://localhost:4000/api`), NUNCA directamente con microservicios. El BFF es el único boundary de seguridad (ver `_docs/16-DECISION_LOG.md` D005).
+El frontend SIEMPRE habla con el BFF (`http://localhost:4000/api`), NUNCA directamente con microservicios. El BFF es el único boundary de seguridad (ver [16-DECISION_LOG.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/16-DECISION_LOG.md) D005).
 
 ### Regla #3 — Auth via cookies httpOnly
 
@@ -87,7 +105,7 @@ NEXT_PUBLIC_ENABLE_SIGNUP=false
 NEXT_PUBLIC_ENABLE_TENANT_CREATION=true
 ```
 
-> Referencia completa: `_docs/08-ENV_VARS_REFERENCE.md`.
+> Referencia completa: [08-ENV_VARS_REFERENCE.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/08-ENV_VARS_REFERENCE.md).
 
 ## Estructura del proyecto
 
@@ -126,12 +144,11 @@ docker compose --profile adm-frontend up               # Con perfil
 
 ## Documentación relevante
 
+Toda la documentación del ecosistema vive en [**clinical-saas-docs**](https://github.com/clinical-saas/clinical-saas-docs):
+
 | Documento | Contenido |
 | :--- | :--- |
-| `_docs/00-INDICE.md` | Índice general del ecosistema |
-| `_docs/08-ENV_VARS_REFERENCE.md` | Referencia completa de env vars |
-| `_plans/16-ADM_FRONTEND_PLAN.md` | Plan de implementación completo (67 páginas) |
-| `_plans/18-FRONTEND_AUTH_PLAN.md` | Plan de auth en frontends (cookies, guards) |
-| `_docs/14-TECHNICAL_LIMITATIONS.md` | Limitaciones técnicas |
-| `_docs/16-DECISION_LOG.md` | Decisiones arquitectónicas |
-| `CLAUDE.md` | Instrucciones para agentes AI |
+| [00-INDICE.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/00-INDICE.md) | Índice general del ecosistema |
+| [08-ENV_VARS_REFERENCE.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/08-ENV_VARS_REFERENCE.md) | Referencia completa de env vars |
+| [14-TECHNICAL_LIMITATIONS.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/14-TECHNICAL_LIMITATIONS.md) | Limitaciones técnicas |
+| [16-DECISION_LOG.md](https://github.com/clinical-saas/clinical-saas-docs/blob/main/16-DECISION_LOG.md) | Decisiones arquitectónicas |
